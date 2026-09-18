@@ -1,0 +1,129 @@
+version: '3.8'
+
+# ============================================================
+#  DOCKER COMPOSE — PRODUKSI
+#
+#     web  : https://lets-digital.bbpompky.id   -> container :3004
+#     API  : https://data-lets.bbpompky.id/api  -> container :5003
+#
+#  Kedua domain itu diteruskan oleh reverse proxy (nginx/tunnel) di
+#  server ke localhost:3004 dan localhost:5003.
+#
+#  Kredensial TIDAK ditulis di file ini - dibaca dari .env
+#  (tidak di-commit). Salin dulu:
+#     Copy-Item .env.example .env
+#
+#  Menjalankan:
+#     docker compose up -d --build
+#     docker compose logs -f
+# ============================================================
+
+services:
+  # ==========================================================
+  #  BACKEND (Express + MySQL)
+  #
+  #  network_mode: "host"  ==> container memakai network stack
+  #  server langsung. Akibatnya:
+  #    1. Port 5003 otomatis terbuka di server (TANPA "ports:"),
+  #       sehingga reverse proxy & NodeMCU di LAN bisa
+  #       mengaksesnya.
+  #    2. DB_HOST=127.0.0.1 di sini menunjuk ke SERVER (bukan
+  #       container), jadi MySQL di luar Docker tetap kena
+  #       TANPA perlu ubah bind-address / grant user '@%'.
+  #  Syarat: host Docker harus Linux.
+  # ==========================================================
+  backend:
+    build: ./backend
+    container_name: pengujian-backend
+    restart: unless-stopped
+    network_mode: "host"
+    environment:
+      # ---------- Database (MySQL di server ini, di luar Docker) ----------
+      - DB_HOST=${DB_HOST:-127.0.0.1}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_USER=${DB_USER:-root}
+      - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD wajib diisi - salin .env.example ke .env}
+      - DB_NAME=${DB_NAME:-pengujian}
+      # ---------- Keycloak ----------
+      - KEYCLOAK_SERVER_URL=${KEYCLOAK_SERVER_URL:-https://auth.bbpompky.id}
+      - KEYCLOAK_REALM=${KEYCLOAK_REALM:-master}
+      - KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID:-pengujian}
+      - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET:?KEYCLOAK_CLIENT_SECRET wajib diisi - salin .env.example ke .env}
+      - KEYCLOAK_ADMIN_USERNAME=${KEYCLOAK_ADMIN_USERNAME:-admin}
+      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:?KEYCLOAK_ADMIN_PASSWORD wajib diisi - salin .env.example ke .env}
+      # ---------- Server ----------
+      - NODE_ENV=production
+      # Port 5003 dipakai reverse proxy (data-lets.bbpompky.id) dan
+      # sketch NodeMCU (arduino/secrets.h -> SERVER_PORT).
+      # Kalau diubah di sini, keduanya juga harus diubah.
+      - PORT=5003
+      # Opsional: paksa daftar ruangan sensor selalu tampil
+      - SENSOR_ROOMS=${SENSOR_ROOMS:-}
+      # ---------- Path data ----------
+      - DATA_PATH=/data
+      - LOGS_PATH=/data/logs
+      - UPLOADS_PATH=/data/uploads
+    volumes:
+      # Mount folder data untuk backend
+      - ./data/backend:/data
+      # Untuk development - kode sumber
+      - ./backend:/usr/src/app
+      - /usr/src/app/node_modules
+    healthcheck:
+      # network_mode: host -> 127.0.0.1 di sini = server
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:5003/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # ==========================================================
+  #  FRONTEND (Next.js)  ->  https://lets-digital.bbpompky.id
+  # ==========================================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # NEXT_PUBLIC_* dipakai BROWSER, jadi harus alamat PUBLIK
+        # (bukan localhost / IP LAN). Nilai ini ditanam saat build ->
+        # kalau berubah, frontend harus di-build ulang (--no-cache).
+        NEXT_PUBLIC_API_URL: ${API_URL:?API_URL wajib diisi - salin .env.example ke .env}
+        NEXT_PUBLIC_KEYCLOAK_ISSUER: ${KEYCLOAK_SERVER_URL:-https://auth.bbpompky.id}/realms/${KEYCLOAK_REALM:-master}
+        NEXT_PUBLIC_KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-pengujian}
+    container_name: pengujian-frontend
+    restart: unless-stopped
+    ports:
+      - "3004:3004"  # ⭐ Host:3004 → Container:3004
+    environment:
+      - NODE_ENV=production
+      - PORT=3004
+      - HOSTNAME=0.0.0.0
+      # Alamat API untuk browser (harus URL publik)
+      - NEXT_PUBLIC_API_URL=${API_URL:?API_URL wajib diisi - salin .env.example ke .env}
+      # ---------- Keycloak (sisi server / NextAuth) ----------
+      - KEYCLOAK_ISSUER=${KEYCLOAK_SERVER_URL:-https://auth.bbpompky.id}/realms/${KEYCLOAK_REALM:-master}
+      - KEYCLOAK_REALM=${KEYCLOAK_REALM:-master}
+      - KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID:-pengujian}
+      - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET:?KEYCLOAK_CLIENT_SECRET wajib diisi - salin .env.example ke .env}
+      # ---------- Keycloak (sisi browser, untuk logout SSO) ----------
+      - NEXT_PUBLIC_KEYCLOAK_ISSUER=${KEYCLOAK_SERVER_URL:-https://auth.bbpompky.id}/realms/${KEYCLOAK_REALM:-master}
+      - NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID:-pengujian}
+      # ---------- NextAuth ----------
+      # NEXTAUTH_URL HARUS sama dengan alamat yang dibuka di browser
+      - NEXTAUTH_URL=${WEB_URL:?WEB_URL wajib diisi - salin .env.example ke .env}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:?NEXTAUTH_SECRET wajib diisi - salin .env.example ke .env}
+      # ---------- Path data ----------
+      - DATA_PATH=/data
+      - CACHE_PATH=/data/.next/cache
+      - PUBLIC_UPLOADS_PATH=/data/public/uploads
+    volumes:
+      # Mount folder data untuk frontend
+      - ./data/frontend:/data
+      # Untuk development - kode sumber
+      - ./frontend:/usr/src/app
+      - /usr/src/app/node_modules
+      - /usr/src/app/.next
+    depends_on:
+      backend:
+        condition: service_healthy

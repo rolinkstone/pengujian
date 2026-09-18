@@ -1,0 +1,15 @@
+# Jangan pernah masukkan kredensial ke dalam image
+.env
+.env.*
+!.env.example
+
+node_modules
+npm-debug.log*
+Dockerfile
+.dockerignore
+
+# Data runtime & unggahan pengguna
+uploads
+data
+logs
+*.log

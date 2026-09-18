@@ -1,0 +1,276 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+    scroll-behavior: smooth;
+    color-scheme: light;
+    background-color: #eff8ff;
+  }
+
+  html.dark {
+    color-scheme: dark;
+    background-color: #050a14;
+  }
+
+  body {
+    @apply antialiased;
+  }
+
+  /* Modern Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-cyan-300/70 dark:bg-cyan-500/30;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-cyan-400 dark:bg-cyan-400/50;
+  }
+}
+
+@layer utilities {
+  /* ===== Latar gradien utama aplikasi (glassmorphism) ===== */
+  .app-gradient {
+    background:
+      radial-gradient(60rem 42rem at 115% -10%, rgba(34, 211, 238, 0.18), transparent 55%),
+      radial-gradient(50rem 36rem at -15% 110%, rgba(99, 102, 241, 0.16), transparent 55%),
+      radial-gradient(44rem 34rem at 55% -20%, rgba(125, 211, 252, 0.16), transparent 55%),
+      linear-gradient(135deg, #eef7ff 0%, #e6f6fc 48%, #eef1ff 100%);
+  }
+
+  .dark .app-gradient {
+    background:
+      radial-gradient(60rem 42rem at 115% -10%, rgba(6, 182, 212, 0.16), transparent 55%),
+      radial-gradient(50rem 36rem at -15% 110%, rgba(99, 102, 241, 0.18), transparent 55%),
+      radial-gradient(44rem 34rem at 55% -20%, rgba(56, 189, 248, 0.1), transparent 55%),
+      linear-gradient(160deg, #030812 0%, #06101f 50%, #050b18 100%);
+  }
+
+  /* ===== Animasi gumpalan warna ===== */
+  @keyframes blobFloat {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+    33%      { transform: translate3d(4%, -7%, 0) scale(1.1); }
+    66%      { transform: translate3d(-5%, 5%, 0) scale(0.94); }
+  }
+  .animate-blob { animation: blobFloat 20s ease-in-out infinite; }
+  .animate-blob-slow { animation: blobFloat 30s ease-in-out infinite reverse; }
+
+  /* ===== Animasi naik saat render ===== */
+  @keyframes riseIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-rise   { animation: riseIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .animate-rise-1 { animation: riseIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both; }
+  .animate-rise-2 { animation: riseIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.16s both; }
+  .animate-rise-3 { animation: riseIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.24s both; }
+  .animate-rise-4 { animation: riseIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.32s both; }
+
+  /* ===== Teks gradien cyan ===== */
+  .text-gradient-cyan {
+    background-image: linear-gradient(115deg, #0e7490 0%, #06b6d4 45%, #3b82f6 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .dark .text-gradient-cyan {
+    background-image: linear-gradient(115deg, #67e8f9 0%, #22d3ee 40%, #60a5fa 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+@layer components {
+  /* ===== Kartu kaca (Glassmorphism) ===== */
+  .glass-card {
+    @apply rounded-2xl border border-white/70 bg-white/60 shadow-lg shadow-cyan-900/[0.05] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-900/40 dark:shadow-black/25;
+  }
+
+  .glass-card-hover {
+    @apply rounded-2xl border border-white/70 bg-white/60 shadow-lg shadow-cyan-900/[0.05] backdrop-blur-2xl transition-all duration-300 hover:-translate-y-0.5 hover:border-cyan-400/40 hover:shadow-xl hover:shadow-cyan-500/15 dark:border-white/10 dark:bg-slate-900/40 dark:shadow-black/25 dark:hover:border-cyan-400/25;
+  }
+
+  /* ===== Chip kaca kecil ===== */
+  .glass-chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-white/60 bg-white/50 px-3 py-1 text-xs font-medium text-slate-600 backdrop-blur-xl dark:border-white/10 dark:bg-white/5 dark:text-slate-300;
+  }
+
+  /* ===== Tombol utama gradien cyan ===== */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-cyan-500/25 transition-all duration-300 hover:from-cyan-400 hover:to-blue-500 hover:shadow-xl hover:shadow-cyan-500/30 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  /* ===== Kartu gradien premium ===== */
+  .gradient-card {
+    @apply relative overflow-hidden rounded-2xl;
+  }
+  .gradient-card::before {
+    content: '';
+    @apply absolute inset-0 opacity-[0.04];
+    background-image: radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.9) 0%, transparent 50%);
+  }
+
+  /* ===== Stat Card ===== */
+  .stat-card {
+    @apply relative overflow-hidden rounded-2xl p-6 transition-all duration-300;
+  }
+  .stat-card::after {
+    content: '';
+    @apply absolute inset-0 opacity-0 transition-opacity duration-300;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.18) 0%, transparent 50%);
+  }
+  .stat-card:hover::after {
+    @apply opacity-100;
+  }
+
+  /* ===== Latar hero beranimasi ===== */
+  .hero-pattern {
+    @apply relative overflow-hidden;
+  }
+  .hero-pattern::before {
+    content: '';
+    @apply absolute -top-24 -right-24 h-96 w-96 rounded-full opacity-10;
+    background: radial-gradient(circle, currentColor 0%, transparent 70%);
+    animation: blobFloat 8s ease-in-out infinite;
+  }
+  .hero-pattern::after {
+    content: '';
+    @apply absolute -bottom-32 -left-32 h-80 w-80 rounded-full opacity-10;
+    background: radial-gradient(circle, currentColor 0%, transparent 70%);
+    animation: blobFloat 10s ease-in-out infinite reverse;
+  }
+
+  /* ===== Badge ===== */
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+  .badge-primary {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-cyan-100 text-cyan-700 dark:bg-cyan-500/15 dark:text-cyan-300;
+  }
+  .badge-success {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300;
+  }
+  .badge-warning {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300;
+  }
+  .badge-danger {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300;
+  }
+  .badge-rose {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400;
+  }
+
+  .text-gradient-amber {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-amber-500 to-orange-500;
+  }
+
+  .animate-in {
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+
+  .animate-in-delay-1 {
+    animation: fadeInUp 0.6s ease-out 0.1s forwards;
+    opacity: 0;
+  }
+
+  .animate-in-delay-2 {
+    animation: fadeInUp 0.6s ease-out 0.2s forwards;
+    opacity: 0;
+  }
+
+  .animate-in-delay-3 {
+    animation: fadeInUp 0.6s ease-out 0.3s forwards;
+    opacity: 0;
+  }
+
+  .animate-in-delay-4 {
+    animation: fadeInUp 0.6s ease-out 0.4s forwards;
+    opacity: 0;
+  }
+
+  .sidebar-item {
+    @apply relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200;
+  }
+
+  .sidebar-item-active {
+    @apply sidebar-item bg-gradient-to-r from-blue-600/20 to-indigo-600/20 text-blue-600 dark:text-blue-400 shadow-sm;
+  }
+
+  .sidebar-item-inactive {
+    @apply sidebar-item text-gray-400 hover:text-gray-100 hover:bg-white/5;
+  }
+}
+
+/* Keyframes */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes heroFloat {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -30px) scale(1.05);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.95);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.2);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Sidebar scrollbar */
+.sidebar-scroll::-webkit-scrollbar {
+  width: 3px;
+}
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  @apply bg-white/10 rounded-full;
+}
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  @apply bg-white/20;
+}
+
+
+
+
