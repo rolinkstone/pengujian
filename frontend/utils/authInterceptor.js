@@ -86,6 +86,8 @@ export const handleAuthFailure = () => {
     }, 5000);
 
   try {
+    // Sisa nilai token dari versi lama aplikasi (aplikasi TIDAK lagi menyimpan
+    // token di storage — satu-satunya sumber token adalah cookie httpOnly).
     localStorage.removeItem('token');
     sessionStorage.removeItem('token');
   } catch (err) {

@@ -71,9 +71,13 @@ export const authOptions = {
       session.user.isKatim = userRoles.includes('katim');
       session.user.isMt = userRoles.includes('mt');
 
-      session.accessToken = token.accessToken;
-      session.idToken = token.idToken;
-      session.refreshToken = token.refreshToken;
+      // ===== CATATAN KEAMANAN (jangan diubah tanpa alasan kuat) =====
+      // accessToken / idToken / refreshToken SENGAJA TIDAK dimasukkan ke objek
+      // session. Cookie sesi NextAuth memang httpOnly, tetapi objek session
+      // dikirim ke browser sebagai BODY JSON (/api/auth/session) sehingga
+      // JavaScript di halaman (termasuk XSS/ekstensi) bisa membacanya.
+      // Token tetap tersimpan di cookie JWE httpOnly dan hanya dibaca di sisi
+      // server, mis. oleh pages/api/auth/keycloak-logout.js untuk logout SSO.
       session.clientId = process.env.KEYCLOAK_CLIENT_ID || 'local-pengujian';
       session.expires = token.expiresAt
         ? new Date(token.expiresAt * 1000).toISOString()

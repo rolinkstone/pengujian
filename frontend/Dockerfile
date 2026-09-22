@@ -18,12 +18,8 @@ COPY . .
 # Env variabel untuk build — Next.js me-bake NEXT_PUBLIC_* saat build,
 # jadi harus diisi dari build args (bukan runtime). Nilai dari compose build.args.
 ARG NEXT_PUBLIC_API_URL
-ARG NEXT_PUBLIC_KEYCLOAK_ISSUER
-ARG NEXT_PUBLIC_KEYCLOAK_CLIENT_ID
 
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_KEYCLOAK_ISSUER=$NEXT_PUBLIC_KEYCLOAK_ISSUER
-ENV NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=$NEXT_PUBLIC_KEYCLOAK_CLIENT_ID
 
 # Build aplikasi Next.js
 RUN npm run build

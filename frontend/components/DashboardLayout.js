@@ -16,7 +16,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { useSession, signOut } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import {
   FaBars,
   FaTimes,
@@ -87,28 +87,13 @@ export default function DashboardLayout({ children, pageTitle = 'Beranda' }) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // ==== Logout NextAuth + Keycloak SSO ====
-  const handleLogout = async () => {
+  // ==== Logout NextAuth + Keycloak SSO (seluruhnya di sisi server) ====
+  // Browser hanya diarahkan ke route ini. Route tersebut membaca id_token dari
+  // cookie sesi httpOnly, membersihkan cookie NextAuth, lalu meneruskan ke
+  // logout Keycloak. Token tidak pernah dibaca/dibuat oleh JavaScript halaman.
+  const handleLogout = () => {
     setIsLoggingOut(true);
-    try {
-      await signOut({ callbackUrl: '/login', redirect: false });
-      const idToken = session?.idToken;
-      const issuer = process.env.NEXT_PUBLIC_KEYCLOAK_ISSUER;
-      const clientId = process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || 'local-pengujian';
-      const origin = window.location.origin;
-
-      if (idToken && issuer) {
-        const keycloakLogoutUrl = `${issuer}/protocol/openid-connect/logout?id_token_hint=${idToken}&post_logout_redirect_uri=${origin}/login&client_id=${clientId}`;
-        window.location.href = keycloakLogoutUrl;
-      } else {
-        window.location.href = '/login';
-      }
-    } catch (error) {
-      console.error('Logout error:', error);
-      window.location.href = '/login';
-    } finally {
-      setIsLoggingOut(false);
-    }
+    window.location.href = '/api/auth/keycloak-logout';
   };
 
   // ==== Data user ====

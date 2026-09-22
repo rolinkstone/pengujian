@@ -13,20 +13,16 @@ const createAxiosInstance = (baseURL = process.env.NEXT_PUBLIC_API_URL || 'http:
     }
   });
 
-  // Request interceptor untuk menambahkan token
-  instance.interceptors.request.use(
-    (config) => {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      return config;
-    },
-    (error) => {
-      console.error('Request interceptor error:', error);
-      return Promise.reject(error);
-    }
-  );
+  // CATATAN KEAMANAN: token TIDAK boleh diambil dari localStorage/sessionStorage.
+  // Storage browser dapat dibaca JavaScript mana pun (XSS/ekstensi), dan token
+  // di sana juga bertahan lebih lama dari sesi. Sumber token satu-satunya adalah
+  // cookie sesi NextAuth yang httpOnly.
+  //
+  // Semua endpoint backend yang dipakai aplikasi saat ini bersifat publik
+  // (/api/sensor/*) sehingga tidak memerlukan header Authorization. Bila nanti
+  // ada endpoint backend yang butuh token, buat route proxy di sisi server
+  // (pages/api/**) yang mengambil token dari cookie httpOnly lewat getToken()
+  // lalu meneruskannya ke backend — jangan kirim token mentah ke browser.
 
   // Response interceptor untuk handle error autentikasi
   instance.interceptors.response.use(

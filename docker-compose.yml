@@ -89,8 +89,6 @@ services:
         # (bukan localhost / IP LAN). Nilai ini ditanam saat build ->
         # kalau berubah, frontend harus di-build ulang (--no-cache).
         NEXT_PUBLIC_API_URL: ${API_URL:?API_URL wajib diisi - salin .env.example ke .env}
-        NEXT_PUBLIC_KEYCLOAK_ISSUER: ${KEYCLOAK_SERVER_URL:-https://auth.bbpompky.id}/realms/${KEYCLOAK_REALM:-master}
-        NEXT_PUBLIC_KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-pengujian}
     container_name: pengujian-frontend
     restart: unless-stopped
     ports:
@@ -106,9 +104,6 @@ services:
       - KEYCLOAK_REALM=${KEYCLOAK_REALM:-master}
       - KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID:-pengujian}
       - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET:?KEYCLOAK_CLIENT_SECRET wajib diisi - salin .env.example ke .env}
-      # ---------- Keycloak (sisi browser, untuk logout SSO) ----------
-      - NEXT_PUBLIC_KEYCLOAK_ISSUER=${KEYCLOAK_SERVER_URL:-https://auth.bbpompky.id}/realms/${KEYCLOAK_REALM:-master}
-      - NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID:-pengujian}
       # ---------- NextAuth ----------
       # NEXTAUTH_URL HARUS sama dengan alamat yang dibuka di browser
       - NEXTAUTH_URL=${WEB_URL:?WEB_URL wajib diisi - salin .env.example ke .env}
