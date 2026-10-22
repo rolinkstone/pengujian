@@ -3,7 +3,7 @@
 #  Kredensial TIDAK dimasukkan ke image.
 #  Semuanya di-inject saat runtime lewat docker-compose (.env).
 # ============================================================
-FROM node:18-alpine
+FROM node:24.22.1-alpine
 
 WORKDIR /usr/src/app
 
